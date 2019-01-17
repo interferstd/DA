@@ -1,0 +1,10 @@
+lexical.hpp -c
+lexical.hpp.fhc -u
+pretree.hpp -c
+pretree.hpp.fhc -u
+lexical_elem.hpp -c
+lexical_elem.hpp.fhc -u
+dlink_list.hpp -c
+dlink_list.hpp.fhc -u
+syntax.cpp -c
+syntax.cpp.fhc -u

@@ -1,0 +1,6 @@
+lexical.cpp -c
+lexical.cpp.fhc -u
+lexical.hpp -c
+lexical.hpp.fhc -u
+pretree.hpp -c
+pretree.hpp.fhc -u
