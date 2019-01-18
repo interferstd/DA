@@ -1,0 +1,53 @@
+#in "stdio"
+#start main(10, 'c')
+#start gcd(12, 6)
+
+#start
+{
+	main(10, 'c')
+	gcd(12, 6)
+}
+#start
+{
+	main(10, 'c')
+	gcd(12, 6)
+}
+
+// NT 
+f::= -> // B or T or N
+()
+{
+}
+g::=
+{
+}
+int intint
+/*d::= int (x)
+{
+}*/
+
+_gcd::= int, int -> int
+(a,b){::= _gcd(b, a%b)}
+(a,0){::= a}
+
+gcd::= int, int -> int
+(a,b) gcd(b, a%b)
+(a,0) a
+
+main::= int, char -> int
+(argc, argv)
+{
+	float * var1(@sizeof(float))
+	23+++++123.3 => var1
+	int in
+	type types
+	char c
+	'\\' => c;
+	'\t' => c
+	$var1
+	::= 0
+}
+(1+1, argv)
+{
+	//he he he	
+}
