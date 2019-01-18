@@ -33,7 +33,7 @@
 *.app
 
 # Secure
-0*.da
+*.da
 *.cpp
 *.hpp
 *.key
