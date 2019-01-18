@@ -13,7 +13,7 @@
 	gcd(12, 6)
 }
 
-// NT 
+// NT
 f::= -> // B or T or N
 ()
 {
@@ -49,5 +49,5 @@ main::= int, char -> int
 }
 (1+1, argv)
 {
-	//he he he	
+	//he he he
 }
