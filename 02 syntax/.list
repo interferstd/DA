@@ -8,5 +8,7 @@ dlink_list.hpp -c
 dlink_list.hpp.fhc -u
 syntax.cpp -c
 syntax.cpp.fhc -u
+syntax.hpp -c
+syntax.hpp.fhc -u
 AVLHML.hpp -c
 AVLHML.hpp.fhc -u
