@@ -10,5 +10,7 @@ syntax.cpp -c
 syntax.cpp.fhc -u
 syntax.hpp -c
 syntax.hpp.fhc -u
+context.hpp -c
+context.hpp.fhc -u
 AVLHML.hpp -c
 AVLHML.hpp.fhc -u
