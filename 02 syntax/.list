@@ -14,3 +14,5 @@ context.hpp -c
 context.hpp.fhc -u
 AVLHML.hpp -c
 AVLHML.hpp.fhc -u
+preprocessing.hpp -c
+preprocessing.hpp.fhc -u
