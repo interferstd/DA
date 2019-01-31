@@ -39,3 +39,6 @@
 *.hpp
 *.key
 key
+
+# Mac
+.DS_Store
