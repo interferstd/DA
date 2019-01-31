@@ -18,6 +18,7 @@ int main()
 //			("\1",[&](){})
 			("start",[&](){printf("[start work]\n");})
 			("end",[&](){printf("\n[end work]");})
+			("",[&](){ cntxt.control_obj.})
 			// End of declaratio interrupts
 			// Start interrupt
 			("Start","pg{start}<program>{end}u")
