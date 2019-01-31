@@ -2,6 +2,7 @@
 # include <bits/c++0x_warning.h>
 #else
 #include "context.hpp"
+#include <time.h>
 
 using namespace std;
 
@@ -13,14 +14,22 @@ int main()
 
 	try{
 		cntxt
+			// Replace standart interrupt
+//			("\1",[&](){})
+			("start",[&](){printf("[start work]\n");})
+			("end",[&](){printf("\n[end work]");})
+			("\1 ",[](){})
+//            ("",[&](){ cntxt.control_obj.massage()})
+			// End of declaratio interrupts
 			// Start interrupt
-			("Start","pg<program>u")
+			("Start","pg{start}<program>{end}u")
 			// Basic interrupts
 			("program","<neof>w(<dbg \n><skip \n><dbg out>g)b")
 			("operator","<if>i<while>i<for>i<switch>i<{[operators]}>i<expression>w'uncorrect operator't")
 			("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
-			("while","")
-			("for","")
+			("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
+			("for","'for'qnirg<skip \n>'('qnw'expected \"(\"'tg<body for>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
+			("body for","")
 			("switch","")
 			("{[operators]}","'{'qnirg<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b<eof>w'finde eof, expected \"}\"'t'}'qwgrcf")
 			("expression",
@@ -29,21 +38,24 @@ int main()
 			(":[lable]","':'qnirgNqnw'expected defenition lable identity't")
 			("::=[operator]","'::='qnirg<operator>cf")
 			// expression
-				("expression 15","")
-				("expression 14","")
-				("expression 13","")
-				("expression 12","")
-				("expression 11","")
-				("expression 10","")
-				("expression 09","")
-				("expression 08","")
-				("expression 07","")
-				("expression 06","")
-				("expression 05","")
-				("expression 04","")
-				("expression 03","")
+				("expression 15","<expression 14><priority 15>w(g<expression 14>)b")
+				("expression 14","<expression 13><priority 14>w(g<expression 13>)b")
+				("expression 13","<expression 12><priority 13>w(g<expression 12>)b")
+				("expression 12","<expression 11><priority 12>w(g<expression 11>)b")
+				("expression 11","<expression 10><priority 11>w(g<expression 11>)b")
+				("expression 10","<expression 09><priority 10>w(g<expression 09>)b")
+				("expression 09","<expression 08><priority 09>w(g<expression 08>)b")
+				("expression 08","<expression 07><priority 08>w(g<expression 07>)b")
+				("expression 07","<expression 06><priority 07>w(g<expression 06>)b")
+				("expression 06","<expression 05><priority 06>w(g<expression 05>)b")
+				("expression 05","<expression 04><priority 05>w(g<expression 04>)b")
+				("expression 04","<expression 03><priority 04>w(g<expression 03>)b")
+				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","")
-				("expression 01","")
+				("expression 01","<expression 15>o<name>o<string>o<number>)")
+				("expression 00","<expression 15>o<name>o<string>o<number>)")
+
+				("([expression 15])", )
 			// priority
 				("priority 01","cf'@'o'$'o'*'o'&'o'++'o'--'o")
 				("priority 02","cf'!'o'~'o'+'o'-'o")
@@ -69,8 +81,10 @@ int main()
 			("eof","Gq") // push true if end of file here into @param flag
 			("neof","Gqn") // push true if not end of file here into @param flag
 			// End of declaratio vector interrupts
-			// End of declaratio interrupts
+			; //getc(stdin);
+			auto t0 = time(0); cntxt
 			("Start"); // run context control
+			auto t1 = time(0); printf("[dt: %lld(%lld-%lld)]",t1-t0,t1,t0);
 			// End
 	} catch(string err_msg)
 	{
