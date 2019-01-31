@@ -2,6 +2,7 @@
 # include <bits/c++0x_warning.h>
 #else
 #include "context.hpp"
+#include <time.h>
 
 using namespace std;
 
@@ -13,8 +14,13 @@ int main()
 
 	try{
 		cntxt
+			// Replace standart interrupt
+//			("\1",[&](){})
+			("start",[&](){printf("[start work]\n");})
+			("end",[&](){printf("\n[end work]");})
+			// End of declaratio interrupts
 			// Start interrupt
-			("Start","pg<program>u")
+			("Start","pg{start}<program>{end}u")
 			// Basic interrupts
 			("program","<neof>w(<dbg \n><skip \n><dbg out>g)b")
 			("operator","<if>i<while>i<for>i<switch>i<{[operators]}>i<expression>w'uncorrect operator't")
@@ -69,8 +75,10 @@ int main()
 			("eof","Gq") // push true if end of file here into @param flag
 			("neof","Gqn") // push true if not end of file here into @param flag
 			// End of declaratio vector interrupts
-			// End of declaratio interrupts
+			; //getc(stdin);
+			auto t0 = time(0); cntxt
 			("Start"); // run context control
+			auto t1 = time(0); printf("[dt: %lld(%lld-%lld)]",t1-t0,t1,t0);
 			// End
 	} catch(string err_msg)
 	{
