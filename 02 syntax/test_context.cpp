@@ -51,7 +51,7 @@ int main()
 				("expression 05","<expression 04><priority 05>w(g<expression 04>)b")
 				("expression 04","<expression 03><priority 04>w(g<expression 03>)b")
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
-				("expression 02","")
+				("expression 02","<priority 02>")
 				("expression 01","<expression 15>o<name>o<string>o<number>)")
 				("expression 00","<expression 15>o<name>o<string>o<number>)")
 
