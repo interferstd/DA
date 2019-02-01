@@ -67,7 +67,7 @@ int main()
 				("expression 01","<priority 01>w(g)b<expression 00>")
 				("expression 00","<([expression 15])>i(Nqng)i(Sqng)i(Iqng)i(Fqng)w'expected primery'")
 
-				("([expression 15])", )
+				("([expression 15])", "'('qnirg<expression 15>')'qnw'expected )")
 			// priority
 				("priority 01","cf'@'o'$'o'*'o'&'o'++'o'--'o")
 				("priority 02","cf'!'o'~'o'+'o'-'o")
