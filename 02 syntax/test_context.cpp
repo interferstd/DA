@@ -13,30 +13,42 @@ int main()
 	cntxt.out() = stdout;
 
 	try{
+		AVLHML<string,char> types;
+		types["int"],types["char"],types["long"],types["bool"],types["float"];
 		cntxt
 			// Replace standart interrupt
 //			("\1",[&](){})
 			("start",[&](){printf("[start work]\n");})
 			("end",[&](){printf("\n[end work]");})
 			("\1 ",[](){})
+			("is type",[&](){cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 //            ("",[&](){ cntxt.control_obj.massage()})
 			// End of declaratio interrupts
 			// Start interrupt
 			("Start","pg{start}<program>{end}u")
 			// Basic interrupts
-			("program","<neof>w(<dbg \n><skip \n><dbg out>g)b")
+			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>g)b")
 			("operator","<if>i<while>i<for>i<switch>i<{[operators]}>i<expression>w'uncorrect operator't")
 			("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
 			("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
 			("for","'for'qnirg<skip \n>'('qnw'expected \"(\"'tg<body for>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
-			("body for","")
-			("switch","")
+			("body for","<operator>';'qnw'expected \";\"'tg<operator>';'qnw'expected \";\"'tg<operator>")
+			// ("switch","'switch'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'{'")
 			("{[operators]}","'{'qnirg<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b<eof>w'finde eof, expected \"}\"'t'}'qwgrcf")
 			("expression",
 				"<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
 			("goto[label]","'goto'qnirgNqnw'expected lable identity't")
 			(":[lable]","':'qnirgNqnw'expected defenition lable identity't")
 			("::=[operator]","'::='qnirg<operator>cf")
+			("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
+			("declaration var","{is type}nirg('*'q)w(g)b<name>g(','q)w(g<name>g)b';'q'\n'[0]onw'ecxpected \"\\n\" or \";\"'tg")
+			("declaration func","<name>g'::='qnw'expected ::='tg<description types><description names><description branches>")
+			("description types", "(<type>irg(','q)w(g<type>g)b)('->'qnirgNqig)")
+			("description names", "'('qnir(Nqnirg(','q)w(g<name>g)b)')'qnw'expected )'t")
+			("description branches", "(<operator>';'q'\n'[0]owgr'excepted ; or \\n't)('('q)w(<expression 14>(','q)w(<expression 14>)b')'qnw'expected )'t<operator>';'q'\n'[0]onw'ecxpected \"\\n\" or \";\"'tg)b")
+			("name","Nqnw'excepted identity't")
+			("type", "{is type}nirg('*'q)w(g)bcf")
+
 			// expression
 				("expression 15","<expression 14><priority 15>w(g<expression 14>)b")
 				("expression 14","<expression 13><priority 14>w(g<expression 13>)b")
@@ -51,8 +63,8 @@ int main()
 				("expression 05","<expression 04><priority 05>w(g<expression 04>)b")
 				("expression 04","<expression 03><priority 04>w(g<expression 03>)b")
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
-				("expression 02","<priority 02>")
-				("expression 01","<expression 15>o<name>o<string>o<number>)")
+				("expression 02","<priority 02>w(g)b<expression 01>")
+				("expression 01","<priority 01>w(g)b<expression 00>")
 				("expression 00","<expression 15>o<name>o<string>o<number>)")
 
 				("([expression 15])", )
