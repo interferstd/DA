@@ -65,7 +65,7 @@ int main()
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>")
-				("expression 00","<expression 15>o<name>o<string>o<number>)")
+				("expression 00","<([expression 15])>i(Nqng)i(Sqng)i(Iqng)i(Fqng)w'expected primery'")
 
 				("([expression 15])", )
 			// priority
