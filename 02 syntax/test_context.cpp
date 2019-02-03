@@ -1,5 +1,5 @@
-#if false//__cplusplus < 201103L
-//#include <bits/c++0x_warning.h>
+#if __cplusplus < 201103L
+#error "must use '-std=c++11' or '-std=c++14'"
 #else
 #include "context.hpp"
 #include <time.h>
