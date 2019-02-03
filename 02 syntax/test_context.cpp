@@ -1,5 +1,5 @@
-#if __cplusplus < 201103L
-# include <bits/c++0x_warning.h>
+#if false//__cplusplus < 201103L
+//#include <bits/c++0x_warning.h>
 #else
 #include "context.hpp"
 #include <time.h>
@@ -17,24 +17,26 @@ int main()
 		types["int"],types["char"],types["long"],types["bool"],types["float"];
 		cntxt
 			// Replace standart interrupt
-//			("\1",[&](){})
+//		("\1",[&](){})
 			("start",[&](){printf("[start work]\n");})
 			("end",[&](){printf("\n[end work]");})
 			("\1 ",[](){})
 			("is type",[&](){cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
-//            ("",[&](){ cntxt.control_obj.massage()})
+//    ("",[&](){ cntxt.control_obj.massage()})
 			// End of declaratio interrupts
 			// Start interrupt
 			("Start","pg{start}<program>{end}u")
 			// Basic interrupts
-			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>g)b")
-			("operator","<if>i<while>i<for>i<switch>i<{[operators]}>i<expression>w'uncorrect operator't")
+			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>)b")
+			("operator","<if>i<while>i<for>i<switch>i<{[operators]}>i<isn`t \n or ;>i<expression>w'uncorrect operator't")
+			("isn`t \n or ;","'\n'[0]q';'on")
 			("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
 			("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
 			("for","'for'qnirg<skip \n>'('qnw'expected \"(\"'tg<body for>'('qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnirg<operator><skip \n>cf")
 			("body for","<operator>';'qnw'expected \";\"'tg<operator>';'qnw'expected \";\"'tg<operator>")
 			("switch","")// ("switch","'switch'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression>'('qnw'expected \")\"'{'")
 			("{[operators]}","'{'qnirg<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b<eof>w'finde eof, expected \"}\"'t'}'qwgrcf")
+			("([expression 15])", "'('qnirg<expression 15>')'qnw'expected )'t")
 			("expression",
 				"<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
 			("goto[label]","'goto'qnirgNqnw'expected lable identity't")
@@ -66,8 +68,6 @@ int main()
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>")
 				("expression 00","<([expression 15])>i(Nqign)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
-
-				("([expression 15])", "'('qnirg<expression 15>')'qnw'expected )'t")
 			// priority
 				("priority 01","cf'@'o'$'o'*'o'&'o'++'o'--'o")
 				("priority 02","cf'!'o'~'o'+'o'-'o")
