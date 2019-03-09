@@ -37,6 +37,8 @@
 *.da
 *.cpp
 *.hpp
+*.c
+*.h
 *.key
 key
 
