@@ -16,3 +16,5 @@ linear.hpp -c
 linear.hpp.fhc -u
 linear.h -c
 linear.h.fhc -u
+getter.hpp -c
+getter.hpp.fhc -u
