@@ -2,6 +2,7 @@
 #error "must use '-std=c++11' or '-std=c++14' or '-std=c++17'"
 #else
 #include "context.hpp"
+#include "tid_table.hpp"
 #include <time.h>
 
 using namespace std;
@@ -10,8 +11,15 @@ int main()
 {
 	context::context cntxt;
 
+	// interpret type count
+
+	string name; // name
+	tids::tid_table var_table; string var_type; // var
+	// lable
+	// func
+
 	AVLHashMap::AVLHML<string,char> types;
-	types["int"],types["char"],types["bool"],types["float"];
+	types["int"],types["char"],types["bool"],types["float"],types["void"];
 	string buf1 = "", buf2 = "", buf3 = "";
 
 	try{
@@ -20,20 +28,29 @@ int main()
 			.set_in("woyna_i_mir.da")
 			.set_out(stdout)
 			// Replace standart interrupt
+			("push space",[&](){ var_table.push_space(); })
+			("pop space",[&](){ var_table.pop_space(); })
+			("push var id",[&](){ var_table.push_id(name, var_type); })
+			("available var",[&](){ cntxt.control_obj.flag() = var_table.available(name); })
+			("declarable var",[&](){ cntxt.control_obj.flag() = var_table.declarable(name); })
+			("colect type",[&](){ var_type += cntxt.control_obj.last().content; })
+			("clear type",[&](){ var_type = ""; })
+			("show type",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "%s", var_type.c_str()); })
+			("push name",[&](){ name = cntxt.control_obj.last().content; })
 			("\1 ",[](){})
 			("\1g",[&](){ cntxt.control_obj.last() = cntxt.control_obj.lexical_obj.get(); if(cntxt.control_obj.last().content[0] == '\n') buf1 = buf2, buf2 = buf3+'\n', buf3 = ""; else (buf3 += ' ') += cntxt.control_obj.last().content; })
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			// End of declaratio interrupts
 			// Start interrupt
-			("Start","pg<program>u")
+			("Start","pg{push space}<program>{pop space}u")
 			// Basic interrupts
 			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>)b")
 			("operator","<;>i<declaration var>i<if>i<while>i<for>i<{[operators]}>i<isn`t \n or ;>i<expression>w'uncorrect operator't")
 			("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<skip \n><expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
 			("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
-			("for","'for'qnirg<skip \n>'('qnw'expected \"(\"'tg<skip \n><body for><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
-			("body for","<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><skip \n>")
-			("{[operators]}","'{'qnirg<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b<eof>w'finde eof, expected \"}\"'t'}'qwgrcf")
+			("for","'for'qnir{push space}g<skip \n>'('qnw'expected \"(\"'tg<skip \n><body for><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
+			("body for","<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><skip \n>{pop space}")
+			("{[operators]}","'{'qnir{push space}g<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b'}'qnw'expected \"}\"'t{pop space}gcf")
 			("([expression 15])", "'('qnirg<expression 15>')'qnw'expected \")\"'tg")
 			("expression",
 				"<;>i<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
@@ -41,13 +58,13 @@ int main()
 			(":[lable]","':'qnirgNqnw'expected defenition lable identity't")
 			("::=[operator]","'::='qnirg<operator>cf")
 			("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
-			("declaration var","{is type}nirg('*'q)w(g)b<name>g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w%(g<name>g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg")
-			("declaration func","<name>g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names><skip \n><description branches><skip \n>")
+			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined't{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
+			("declaration func","{push space}<name>g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names><skip \n><description branches><skip \n>{pop space}")
 			("description types", "(<type>ir(','q)w(g<skip \n><type>g)b)<skip \n>('->'qnirg<type>)<skip \n>")
 			("description names", "'('qnir(g<skip \n>Nqnirg(','q)w(g<skip \n><name>g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
 			("description branches", "(<operator><is \n or ;>wgr'excepted ; or \\n't)('('q)w(g<expression 14>(','q)w(g<expression 14>)b')'qnw'expected \")\"'tg<operator><is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg)b")
 			("name","Nqnw'excepted identity't")
-			("type", "{is type}nirg('*'q)w(g)bcf")
+			("type", "{is type}nir{clear type}{colect type}g('*'q)w({colect type}g)bcf")
 
 			// expression
 				("expression 15","<expression 14><priority 15>w(g<expression 14>)b")
@@ -65,7 +82,7 @@ int main()
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>('++'q'--'o)ig")
-				("expression 00","<([expression 15])>i(Nqwg('('qi(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
+				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var't)i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
 
 			// priority
 				("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
@@ -105,7 +122,9 @@ int main()
 		fprintf(stdout, "\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.file.c_str(),
 			cntxt.control_obj.lexical_obj.line-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
-		cout << "Critical error: " << err_msg << "\n"+buf1+buf2+buf3+"\n";
+		cout << "Critical error: " << err_msg <<
+			((err_msg == "not defined var" || err_msg == "id is defined")?(string(": ")+name):string(""))
+			<< "\n"+buf1+buf2+buf3+"\n";
 		stdout << cntxt.control_obj.last();
 	}
 
