@@ -14,8 +14,10 @@ int main()
 	// interpret type count
 
 	string name; // name
-	tids::tid_table var_table; string var_type; // var
-	// lable
+	tids::tid_table<string, string> var_table; string var_type; // var
+	// param
+	typedef pair<string, unsigned long long> localization;
+	tids::tid_elem<string, char> lable_table; tids::tid_elem<string, localization> need_lable;// lable
 	// func
 
 	AVLHashMap::AVLHML<string,char> types;
@@ -37,14 +39,18 @@ int main()
 			("clear type",[&](){ var_type = ""; })
 			("show type",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "%s", var_type.c_str()); })
 			("push name",[&](){ name = cntxt.control_obj.last().content; })
-			("\1 ",[](){})
+			("declarable lable",[&](){ cntxt.control_obj.flag() = !lable_table.at(name); })
+			("define lable",[&](){ lable_table[name] = 'L'; })
+			("need lable",[&](){ need_lable[name] = {cntxt.control_obj.lexical_obj.file, cntxt.control_obj.lexical_obj.line}; })
+			("check lables",[&](){ need_lable.map([&](pair<string, localization> p)
+				{ if(!lable_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.file = p.second.first; cntxt.control_obj.lexical_obj.line = p.second.second; throw string("lable not defined: "); } }); })
 			("\1g",[&](){ cntxt.control_obj.last() = cntxt.control_obj.lexical_obj.get(); if(cntxt.control_obj.last().content[0] == '\n') buf1 = buf2, buf2 = buf3+'\n', buf3 = ""; else (buf3 += ' ') += cntxt.control_obj.last().content; })
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			// End of declaratio interrupts
 			// Start interrupt
 			("Start","pg{push space}<program>{pop space}u")
 			// Basic interrupts
-			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>)b")
+			("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>)b{check lables}")
 			("operator","<;>i<declaration var>i<if>i<while>i<for>i<{[operators]}>i<isn`t \n or ;>i<expression>w'uncorrect operator't")
 			("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<skip \n><expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
 			("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
@@ -54,17 +60,17 @@ int main()
 			("([expression 15])", "'('qnirg<expression 15>')'qnw'expected \")\"'tg")
 			("expression",
 				"<;>i<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
-			("goto[label]","'goto'qnirgNqnw'expected lable identity't")
-			(":[lable]","':'qnirgNqnw'expected defenition lable identity't")
+			("goto[label]","'goto'qnirgNqnw'expected lable identity't{push name}{need lable}g")
+			(":[lable]","':'qnirgNqnw'expected defenition lable identity't{push name}{declarable lable}nw'lable is define: 't{define lable}g")
 			("::=[operator]","'::='qnirg<operator>cf")
 			("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
-			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined't{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
+			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined: 't{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
 			("declaration func","{push space}<name>g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names><skip \n><description branches><skip \n>{pop space}")
 			("description types", "(<type>ir(','q)w(g<skip \n><type>g)b)<skip \n>('->'qnirg<type>)<skip \n>")
 			("description names", "'('qnir(g<skip \n>Nqnirg(','q)w(g<skip \n><name>g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
 			("description branches", "(<operator><is \n or ;>wgr'excepted ; or \\n't)('('q)w(g<expression 14>(','q)w(g<expression 14>)b')'qnw'expected \")\"'tg<operator><is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg)b")
 			("name","Nqnw'excepted identity't")
-			("type", "{is type}nir{clear type}{colect type}g('*'q)w({colect type}g)bcf")
+			("type", "{is type}nir{clear type}{colect type}g('*'q'**'o)w({colect type}g)bcf")
 
 			// expression
 				("expression 15","<expression 14><priority 15>w(g<expression 14>)b")
@@ -82,7 +88,7 @@ int main()
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>('++'q'--'o)ig")
-				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var't)i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
+				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var: 't)i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
 
 			// priority
 				("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
@@ -119,18 +125,19 @@ int main()
 			// End
 	} catch(string err_msg)
 	{
-		fprintf(stdout, "\nFile: %s\nLine: %llu\n",
+		fprintf(stdout, "================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.file.c_str(),
 			cntxt.control_obj.lexical_obj.line-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
 		cout << "Critical error: " << err_msg <<
-			((err_msg == "not defined var" || err_msg == "id is defined")?(string(": ")+name):string(""))
-			<< "\n"+buf1+buf2+buf3+"\n";
-		stdout << cntxt.control_obj.last();
+			((err_msg == "not defined var: " || err_msg == "id is defined: " ||
+			 err_msg == "lable is define: " || err_msg == "lable not defined: ")?name:"")
+			<< "\n================================================\n";
+		if(!(err_msg == "lable not defined: ")){
+			cout << buf1+buf2+buf3+"\n";
+			stdout << cntxt.control_obj.last();
+		}
 	}
-
-	if(cntxt.in())fclose(cntxt.in());
 
 	return 0;
 }
 #endif
-
