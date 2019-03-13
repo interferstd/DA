@@ -13,15 +13,15 @@ int main()
 
 	// interpret type count
 
-	string name; // name
-	tids::tid_table<string, string> var_table; string var_type; // var
-	// param
-	typedef pair<string, unsigned long long> localization;
-	tids::tid_elem<string, char> lable_table; tids::tid_elem<string, localization> need_lable;// lable
-	// func
+	string name = "", type = ""; // additional
+	tids::tid_table<string, string> var_table; // var
+	tids::tid_elem<string, char> lable_table; tids::tid_elem<string, localization> need_lable; // lable
+	tids::function_desribe<string, string> function_to_init; // param
+	tids::tid_elem<string, tids::function_desribe<string, string>> function_table; tids::tid_elem<string, localization> need_function; // func
 
-	AVLHashMap::AVLHML<string,char> types;
-	types["int"],types["char"],types["bool"],types["float"],types["void"];
+	AVLHashMap::AVLHML<string,char> types; // types
+
+	types["int"],types["char"],types["bool"],types["float"];
 	string buf1 = "", buf2 = "", buf3 = "";
 
 	try{
@@ -32,18 +32,28 @@ int main()
 			// Replace standart interrupt
 			("push space",[&](){ var_table.push_space(); })
 			("pop space",[&](){ var_table.pop_space(); })
-			("push var id",[&](){ var_table.push_id(name, var_type); })
+			("push var id",[&](){ var_table.push_id(name, type); })
 			("available var",[&](){ cntxt.control_obj.flag() = var_table.available(name); })
 			("declarable var",[&](){ cntxt.control_obj.flag() = var_table.declarable(name); })
-			("colect type",[&](){ var_type += cntxt.control_obj.last().content; })
-			("clear type",[&](){ var_type = ""; })
-			("show type",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "%s", var_type.c_str()); })
+			("colect type",[&](){ type += cntxt.control_obj.last().content; })
+			("clear type",[&](){ type = ""; })
+			("show type",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "%s", type.c_str()); })
 			("push name",[&](){ name = cntxt.control_obj.last().content; })
 			("declarable lable",[&](){ cntxt.control_obj.flag() = !lable_table.at(name); })
 			("define lable",[&](){ lable_table[name] = 'L'; })
-			("need lable",[&](){ need_lable[name] = {cntxt.control_obj.lexical_obj.file, cntxt.control_obj.lexical_obj.line}; })
+			("need lable",[&](){ need_lable[name] = cntxt.control_obj.lexical_obj.local; })
 			("check lables",[&](){ need_lable.map([&](pair<string, localization> p)
-				{ if(!lable_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.file = p.second.first; cntxt.control_obj.lexical_obj.line = p.second.second; throw string("lable not defined: "); } }); })
+				{ if(!lable_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw string("lable not defined: "); } }); })
+			("function format",[&](){ cntxt.control_obj.message() = function_to_init.format(); })
+			("set return type",[&](){ function_to_init.return_type() = type; })
+			("add type",[&](){ function_to_init.types.add(type); })
+			("add name",[&](){ function_to_init.ids.add(name); })
+			("clear function",[&](){ function_to_init = tids::function_desribe<string, string>(); })
+			("push function id",[&](){ function_to_init.id() = cntxt.control_obj.last().content; })
+			("need function",[&](){ need_function[function_to_init.format()] = cntxt.control_obj.lexical_obj.local; })
+			("init function",[&](){ function_to_init.init(var_table.current()); function_table[function_to_init.format()] = function_to_init; })
+			("check function",[&](){ need_function.map([&](pair<string, localization> p)
+				{ if(!function_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw string("function not defined: "); } }); })
 			("\1g",[&](){ cntxt.control_obj.last() = cntxt.control_obj.lexical_obj.get(); if(cntxt.control_obj.last().content[0] == '\n') buf1 = buf2, buf2 = buf3+'\n', buf3 = ""; else (buf3 += ' ') += cntxt.control_obj.last().content; })
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			// End of declaratio interrupts
@@ -65,9 +75,9 @@ int main()
 			("::=[operator]","'::='qnirg<operator>cf")
 			("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
 			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined: 't{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
-			("declaration func","{push space}<name>g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names><skip \n><description branches><skip \n>{pop space}")
-			("description types", "(<type>ir(','q)w(g<skip \n><type>g)b)<skip \n>('->'qnirg<type>)<skip \n>")
-			("description names", "'('qnir(g<skip \n>Nqnirg(','q)w(g<skip \n><name>g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
+			("declaration func","{clear function}{push space}<name>{push function id}g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names>('{'v{function format}v'}\n'v){init function}<skip \n><description branches><skip \n>{pop space}")
+			("description types", "(<type>ir{add type}(','q)w(g<skip \n><type>{add type})b)<skip \n>('->'qnirg<type>{set return type})<skip \n>")
+			("description names", "'('qnir(g<skip \n>Nqnir{push name}{add name}g(','q)w(g<skip \n><name>{push name}{add name}g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
 			("description branches", "(<operator><is \n or ;>wgr'excepted ; or \\n't)('('q)w(g<expression 14>(','q)w(g<expression 14>)b')'qnw'expected \")\"'tg<operator><is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg)b")
 			("name","Nqnw'excepted identity't")
 			("type", "{is type}nir{clear type}{colect type}g('*'q'**'o)w({colect type}g)bcf")
@@ -126,8 +136,8 @@ int main()
 	} catch(string err_msg)
 	{
 		fprintf(stdout, "================================================\nFile: %s\nLine: %llu\n",
-			cntxt.control_obj.lexical_obj.file.c_str(),
-			cntxt.control_obj.lexical_obj.line-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
+			cntxt.control_obj.lexical_obj.local.first.c_str(),
+			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
 		cout << "Critical error: " << err_msg <<
 			((err_msg == "not defined var: " || err_msg == "id is defined: " ||
 			 err_msg == "lable is define: " || err_msg == "lable not defined: ")?name:"")
