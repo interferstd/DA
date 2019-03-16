@@ -3,6 +3,7 @@
 #else
 #include "context.hpp"
 #include "tid_table.hpp"
+#include "errors.hpp"
 #include <time.h>
 
 using namespace std;
@@ -11,7 +12,7 @@ int main()
 {
 	context::context cntxt;
 
-	// interpret type count
+	dlist<string> types, operations; // interpret type count
 
 	string name = "", type = ""; // additional
 	tids::tid_table<string, string> var_table; // var
@@ -43,7 +44,7 @@ int main()
 			("define lable",[&](){ lable_table[name] = 'L'; })
 			("need lable",[&](){ need_lable[name] = cntxt.control_obj.lexical_obj.local; })
 			("check lables",[&](){ need_lable.map([&](pair<string, localization> p)
-				{ if(!lable_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw string("lable not defined: "); } }); })
+				{ if(!lable_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw semantic_msg("lable not defined: "); } }); })
 			("function format",[&](){ cntxt.control_obj.message() = function_to_init.format(); })
 			("set return type",[&](){ function_to_init.return_type() = type; })
 			("add type",[&](){ function_to_init.types.add(type); })
@@ -53,8 +54,9 @@ int main()
 			("need function",[&](){ need_function[function_to_init.format()] = cntxt.control_obj.lexical_obj.local; })
 			("init function",[&](){ function_to_init.init(var_table.current()); function_table[function_to_init.format()] = function_to_init; })
 			("check function",[&](){ need_function.map([&](pair<string, localization> p)
-				{ if(!function_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw string("function not defined: "); } }); })
+				{ if(!function_table.at(p.first)){ name = p.first; cntxt.control_obj.lexical_obj.local = p.second; throw semantic_msg("function not defined: "); } }); })
 			("\1g",[&](){ cntxt.control_obj.last() = cntxt.control_obj.lexical_obj.get(); if(cntxt.control_obj.last().content[0] == '\n') buf1 = buf2, buf2 = buf3+'\n', buf3 = ""; else (buf3 += ' ') += cntxt.control_obj.last().content; })
+			("throw semantic",[&](){ throw semantic_msg(cntxt.control_obj.message()); })
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			// End of declaratio interrupts
 			// Start interrupt
@@ -67,14 +69,14 @@ int main()
 			("for","'for'qnir{push space}g<skip \n>'('qnw'expected \"(\"'tg<skip \n><body for><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
 			("body for","<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><skip \n>{pop space}")
 			("{[operators]}","'{'qnir{push space}g<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b'}'qnw'expected \"}\"'t{pop space}gcf")
-			("([expression 15])", "'('qnirg<expression 15>')'qnw'expected \")\"'tg")
+			("([expression 15]) or ([type])[expression 15]", "'('qnirgn<type>e({push operation}')'qnw'expected \")\"'t<expression 15>cf)i(<expression 15>')'qnw'expected \")\"'tg)")
 			("expression",
 				"<;>i<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
 			("goto[label]","'goto'qnirgNqnw'expected lable identity't{push name}{need lable}g")
 			(":[lable]","':'qnirgNqnw'expected defenition lable identity't{push name}{declarable lable}nw'lable is define: 't{define lable}g")
 			("::=[operator]","'::='qnirg<operator>cf")
 			("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
-			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined: 't{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
+			("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined: '{throw semantic}{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
 			("declaration func","{clear function}{push space}<name>{push function id}g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names>('{'v{function format}v'}\n'v){init function}<skip \n><description branches><skip \n>{pop space}")
 			("description types", "(<type>ir{add type}(','q)w(g<skip \n><type>{add type})b)<skip \n>('->'qnirg<type>{set return type})<skip \n>")
 			("description names", "'('qnir(g<skip \n>Nqnir{push name}{add name}g(','q)w(g<skip \n><name>{push name}{add name}g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
@@ -98,7 +100,7 @@ int main()
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>('++'q'--'o)ig")
-				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var: 't)i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
+				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var: '{throw semantic})i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
 
 			// priority
 				("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
@@ -133,9 +135,40 @@ int main()
 			("Start"); // run context control
 			auto t1 = time(0); printf("[dt: %lld(%lld-%lld)]",t1-t0,t1,t0);
 			// End
-	} catch(string err_msg)
+	}
+	catch(preprocess_msg msg)
 	{
-		fprintf(stdout, "================================================\nFile: %s\nLine: %llu\n",
+		fprintf(cntxt.out(), "================================================\nFile: %s\nLine: %llu\n",
+			cntxt.control_obj.lexical_obj.local.first.c_str(),
+			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
+		cout << "Critical preprocessing error:\n " << msg.content << "\n================================================\n";
+	}
+	catch(context_msg msg)
+	{
+		fprintf(cntxt.out(), "================================================\nFile: %s\nLine: %llu\n",
+			cntxt.control_obj.lexical_obj.local.first.c_str(),
+			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
+		cout << "Critical context error:\n " << msg.content << "\n================================================\n";
+		cout << buf1+buf2+buf3+"\n";
+		stdout << cntxt.control_obj.last();
+	}
+	catch(semantic_msg msg)
+	{
+		fprintf(cntxt.out(), "================================================\nFile: %s\nLine: %llu\n",
+			cntxt.control_obj.lexical_obj.local.first.c_str(),
+			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
+		cout << "Critical semantic error:\n " << msg.content << name
+//			((err_msg == "not defined var: " || err_msg == "id is defined: " ||
+//			 err_msg == "lable is define: " || err_msg == "lable not defined: ")?name:"")
+			<< "\n================================================\n";
+		if(!(msg.content == "lable not defined: ")){
+			cout << buf1+buf2+buf3+"\n";
+			stdout << cntxt.control_obj.last();
+		}
+	}
+	catch(string err_msg)
+	{
+		fprintf(cntxt.out(), "================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.local.first.c_str(),
 			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
 		cout << "Critical error: " << err_msg <<

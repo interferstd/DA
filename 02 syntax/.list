@@ -20,3 +20,5 @@ getter.hpp -c
 getter.hpp.fhc -u
 tid_table.hpp -c
 tid_table.hpp.fhc -u
+errors.hpp -c
+errors.hpp.fhc -u
