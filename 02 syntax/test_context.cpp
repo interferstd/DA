@@ -69,7 +69,7 @@ int main()
 			("for","'for'qnir{push space}g<skip \n>'('qnw'expected \"(\"'tg<skip \n><body for><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
 			("body for","<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><skip \n>{pop space}")
 			("{[operators]}","'{'qnir{push space}g<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b'}'qnw'expected \"}\"'t{pop space}gcf")
-			("([expression 15]) or ([type])[expression 15]", "'('qnirgn<type>e({push operation}')'qnw'expected \")\"'t<expression 15>cf)i(<expression 15>')'qnw'expected \")\"'tg)")
+			("([expression 15]) or ([type])[expression 14]", "'('qnirgn({is type}nirg('*'q'**'o)w(g)bcf)e('{push operation}'')'qnw'expected \")\"'tg<expression 14>cf)i(<expression 15>')'qnw'expected \")\"'tg)")
 			("expression",
 				"<;>i<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
 			("goto[label]","'goto'qnirgNqnw'expected lable identity't{push name}{need lable}g")
@@ -100,7 +100,7 @@ int main()
 				("expression 03","<expression 02><priority 03>wg<expression 03>")
 				("expression 02","<priority 02>w(g)b<expression 01>")
 				("expression 01","<priority 01>w(g)b<expression 00>('++'q'--'o)ig")
-				("expression 00","<([expression 15])>i(Nq{push name}wg('('qe({available var}nw'not defined var: '{throw semantic})i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
+				("expression 00","<([expression 15]) or ([type])[expression 14]>i(Nq{push name}wg('('qe({available var}nw'not defined var: '{throw semantic})i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqign)i(Iqign)i(Fqign)w'expected primery't")
 
 			// priority
 				("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
