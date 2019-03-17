@@ -12,7 +12,7 @@ int main()
 {
 	context::context cntxt;
 
-	dlist<string> types, operations; // interpret type count
+	dllist::dlist<string> stack_types, stack_operations; // interpret type count
 
 	string name = "", type = ""; // additional
 	tids::tid_table<string, string> var_table; // var
