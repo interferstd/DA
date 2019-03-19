@@ -1,0 +1,79 @@
+/*
+	Name: .cntxt
+	Copyright: 2019 ALL Right Reserved
+	Author: Dmitry Bychkov
+	Date: 19.03.20 00:38
+	Description:
+		instructions for context class
+*/
+// Begin
+	// Start interrupt
+		("Start","pg{push space}<program>{pop space}u")
+	// Basic interrupts
+		("program","<neof>w(<dbg \n><skip \n><dbg out><declarations>)b{check lables}")
+		("operator","<;>i<declaration var>i<if>i<while>i<for>i<{[operators]}>i<isn`t \n or ;>i<expression>w'uncorrect operator't")
+		("if","'if'qnirg<skip \n>'('qnw'expected \"(\"'tg<skip \n><expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
+		("while","'while'qnirg<skip \n>'('qnw'expected \"(\"'tg<expression><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
+		("for","'for'qnir{push space}g<skip \n>'('qnw'expected \"(\"'tg<skip \n><body for><skip \n>')'qnw'expected \")\"'tg<skip \n><operator><skip \n>'else'qnwnrg<operator><skip \n>cf")
+		("body for","<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><is \n or ;>nw'expected \";\" or \"\\n\"'tg<skip \n><operator><skip \n>{pop space}")
+		("{[operators]}","'{'qnir{push space}g<skip \n>(<eof>'}'on)w(<operator><skip \n;>)b'}'qnw'expected \"}\"'t{pop space}gcf")
+		("([expression 15]) or ([type])[expression 14]", "'('qnirgn({is type}nir{clear buf}'('{mcolect buf}{colect buf}g('*'q'**'o)w({colect buf}g)bcf)e({colect buf}{show buf}{push operation}')'qnw'expected \")\"'tg<expression 14>cf)i(<expression 15>')'qnw'expected \")\"'tg)")
+		("expression",
+			"<;>i<goto[label]>i<:[lable]>i<::=[operator]>i<expression 15>w'uncorrect expression't")
+		("goto[label]","'goto'qnirgNqnw'expected lable identity't{push name}{need lable}g")
+		(":[lable]","':'qnirgNqnw'expected defenition lable identity't{push name}{declarable lable}nw'lable is define: 't{define lable}g")
+		("::=[operator]","'::='qnirg<operator>cf")
+		("declarations","<declaration var>i<declaration func>w'uncorrect declaration'")
+		("declaration var","{is type}nir{colect type}g('*'q'**'o)w({colect type}g)b<name>{push name}{declarable var}nw'id is defined: '{throw semantic}{push var id}g%init param('('qi(g<expression 15>')'qnw'expected \")\"'tg))(','q)w(g<name>{push name}{push var id}g<init param>)b<is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg{clear type}")
+		("declaration func","{clear function}{push space}<name>{push function id}g<skip \n>'::='qnw'expected ::='tg<skip \n><description types><skip \n><description names>('{'v{function format}v'}\n'v){init function}<skip \n><description branches><skip \n>{pop space}")
+		("description types", "(<type>ir{add type}(','q)w(g<skip \n><type>{add type})b)<skip \n>('->'qnirg<type>{set return type})<skip \n>")
+		("description names", "'('qnir(g<skip \n>Nqnir{push name}{add name}g(','q)w(g<skip \n><name>{push name}{add name}g)b)<skip \n>')'qnw'expected \")\"'tg<skip \n>")
+		("description branches", "(<operator><is \n or ;>wgr'excepted ; or \\n't)('('q)w(g<expression 14>(','q)w(g<expression 14>)b')'qnw'expected \")\"'tg<operator><is \n or ;>nw'ecxpected \"\\n\" or \";\"'tg)b")
+		("name","Nqnw'excepted identity't")
+		("type", "{is type}nir{clear type}{colect type}g('*'q'**'o)w({colect type}g)bcf")
+		// expression
+			("expression 15","<expression 14><priority 15>w({clear buf}{colect buf}{show buf}{push operation}g<expression 14>)b")
+			("expression 14","<expression 13><priority 14>w({clear buf}{colect buf}{show buf}{push operation}g<expression 13>)b")
+			("expression 13","<expression 12><priority 13>w({clear buf}{colect buf}{show buf}{push operation}g<expression 12>)b")
+			("expression 12","<expression 11><priority 12>w({clear buf}{colect buf}{show buf}{push operation}g<expression 11>)b")
+			("expression 11","<expression 10><priority 11>w({clear buf}{colect buf}{show buf}{push operation}g<expression 11>)b")
+			("expression 10","<expression 09><priority 10>w({clear buf}{colect buf}{show buf}{push operation}g<expression 09>)b")
+			("expression 09","<expression 08><priority 09>w({clear buf}{colect buf}{show buf}{push operation}g<expression 08>)b")
+			("expression 08","<expression 07><priority 08>w({clear buf}{colect buf}{show buf}{push operation}g<expression 07>)b")
+			("expression 07","<expression 06><priority 07>w({clear buf}{colect buf}{show buf}{push operation}g<expression 06>)b")
+			("expression 06","<expression 05><priority 06>w({clear buf}{colect buf}{show buf}{push operation}g<expression 05>)b")
+			("expression 05","<expression 04><priority 05>w({clear buf}{colect buf}{show buf}{push operation}g<expression 04>)b")
+			("expression 04","<expression 03><priority 04>w({clear buf}{colect buf}{show buf}{push operation}g<expression 03>)b")
+			("expression 03","<expression 02><priority 03>i({clear buf}{colect buf}{show buf}{push operation}g<expression 03>)")
+			("expression 02","{clear buf}''{mcolect buf}{push operation}<priority 02>w({clear buf}{colect buf}{show buf}{push operation}g)b<expression 01>")
+			("expression 01","{clear buf}''{mcolect buf}{push operation}<priority 01>w({clear buf}{colect buf}{show buf}{push operation}g)b<expression 00>('++'q'--'o)i({clear buf}{colect buf}{show buf}{push operation}g)")
+			("expression 00","<([expression 15]) or ([type])[expression 14]>i(Nq{push name}wg('('qe({available var}nw'not defined var: '{throw semantic}{var type in buf}{show buf}{push type})i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqi({clear buf}'char*'{mcolect buf}{show buf}{push type}g)n)i(Iqi({clear buf}'int'{mcolect buf}{show buf}{push type}g)n)i(Fqi({clear buf}'float'{mcolect buf}{show buf}{push type}g)n)w'expected primery't")
+		// priority
+			("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
+			("priority 02","'!'q'~'o'+'o'-'o")
+			("priority 03","'**'q")
+			("priority 04","'*'q'%'o'/'o")
+			("priority 05","'+'q'-'o")
+			("priority 06","'>>'q'<<'o")
+			("priority 07","'^'q")
+			("priority 08","'&'q")
+			("priority 09","'|'q")
+			("priority 10","'<='q'<'o'>'o'>='o")
+			("priority 11","'=='q'!='o")
+			("priority 12","'&&'q")
+			("priority 13","'||'q")
+			("priority 14","'=*'q'=-'o'=+'o'=%'o'=/'o'=<<'o'=>>'o'=&'o'=|'o'=^'o'=>'o")
+			("priority 15","','q")
+	// DEBUGing interrupts
+		("DBG","%dbg \n()%dbg out()") // overload empty dbg
+	//	("DBG","%dbg \n('\n'[0]qi('\n'v))%dbg out(j' 'v)") // overload dbg
+	// Elementary interrupts
+		(";","';'qign") // set flag if is '\n' or ';'
+		("is \n or ;","'\n'[0]q';'o") // set flag if is '\n' or ';'
+		("isn`t \n or ;","'\n'[0]q';'on") // set flag if is not ('\n' or ';')
+		("skip \n","'\n'[0]qwgb") // skip all simbol '\n'(eoln)
+		("skip \n;","('\n'[0]q';'o)wgb") // skip all simbol '\n'(eoln) and ';'
+		("eof","Gq") // push true if end of file here into @param flag
+		("neof","Gqn") // push true if not end of file here into @param flag
+	// End of declaratio vector interrupts
+// End
