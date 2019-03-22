@@ -1,7 +1,8 @@
 #if __cplusplus < 201103L
 #error "must use '-std=c++11' or '-std=c++14' or '-std=c++17'"
 #else
-//#define DEBUG
+
+#define DEBUG
 #include "context.hpp"
 #include "tid_table.hpp"
 #include "errors.hpp"
@@ -11,7 +12,6 @@ using namespace std;
 
 int main()
 {
-
 	dllist::dlist<string> stack_types, stack_operations; string buf; // interpret type count
 
 	string name = "", type = ""; // additional
@@ -179,6 +179,7 @@ int main()
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			("do while",[&](){ DBG("[call do while]"); interpret_do_while(); DBG("[out call do while]"); })
 			("do",[&](){ DBG("[call do]"); interpret_do(); DBG("[out call do]"); })
+			("pause",[](){ system("pause"); })
 			("\1\n",[](){})
 			("\1 ",[](){})
 			// End of declaratio interrupts
