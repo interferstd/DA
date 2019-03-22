@@ -12,6 +12,7 @@ using namespace std;
 
 int main()
 {
+	DBG("[START MAIN]");
 	dllist::dlist<string> stack_types, stack_operations; string buf; // interpret type count
 
 	string name = "", type = ""; // additional
@@ -22,8 +23,10 @@ int main()
 
 	AVLHashMap::AVLHML<string,char> types; // types
 
+	DBG("[same init]")
 	types["int"],types["char"],types["float"];
 	string buf1 = "", buf2 = "", buf3 = "";
+	DBG("[same inited]")
 
 	function<void(string, bool)> interpret = [&](string op, bool unary)
 	{
@@ -135,8 +138,10 @@ int main()
 		DBG("[do while end 2]");
 	};
 
+	DBG("[START WORK]");
 	context::context cntxt;
-	
+	DBG("[INIT CONTEXT]");
+
 	try{
 		cntxt
 			// Replace standart interrupt
