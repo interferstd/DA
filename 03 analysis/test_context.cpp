@@ -40,7 +40,7 @@ void* main_analysis(void * arg)
 		auto unnamed = [&is_ref,&name](string s)->string { if(is_ref(s)) for(auto &e: s) { if(e=='&') return (e='*',s); } else throw semantic_msg(string("Can`t unnamed ")+(name="",s)); };
 		auto named = [&is_ptr,&name](string s)->string { if(is_ptr(s)) { reverse(s.begin(),s.end()); for(auto &e: s) { if(e=='*') { e='&'; reverse(s.begin(),s.end()); return s; } } } else throw semantic_msg(string("Can`t named ")+(name="",s)); };
 		map<string, int> inst =
-			{{"*",3},{"/",1},{"+",3},{"-",3},{"==",2},{"!=",2},{"<=",2},{">=",2},{"<",2},{">",2},{"&&",2},{"||",2},{"@",3},{"$",3},{"&",3}};
+			{{"*",3},{"/",1},{"+",3},{"-",3},{"==",2},{"!=",2},{"<=",2},{">=",2},{"<",2},{">",2},{"&&",2},{"||",2},{"@",3},{"$",3},{"&",3},{"=*",4},{"=-",4},{"=+",4},{"=/",4},{"%",4},{"=>",4},{"++",5},{"--",5}};
 
 		switch (inst[op]) {
 			case 0:
@@ -80,6 +80,20 @@ void* main_analysis(void * arg)
 					throw semantic_msg(string("Can`t done binary operation ")+op2+" "+op+" "+op1+(name=""));
 				}
 			} break;
+			case 4:
+			{
+				string op1 = *stack_types.back();
+				stack_types.tb();
+				string op2 = *stack_types.back();
+				stack_types.tb();
+				if(unref_type(op1) == unref_type(op2) && is_ref(op1))
+				{
+					stack_types.pb(op1);
+				}else
+				{
+					throw semantic_msg(string("Can`t done assign operation ")+op2+" "+op+" "+op1+(name=""));
+				}
+			} break;
 			case 2:
 			{
 				string op1 = *stack_types.back();
@@ -106,6 +120,24 @@ void* main_analysis(void * arg)
 				else
 				{
 					throw semantic_msg(string("Can`t done unary operation ")+op+" "+op1+(name=""));
+				}
+			} break;
+			case 5:
+			{
+				string op1 = *stack_types.back();
+				stack_types.tb();
+				if(!is_ref(op1))
+				{
+					throw semantic_msg(string("Can`t done unary operation ")+((unary)?op+op1:op1+op)+(name=""));
+				}
+				if(op == "++" || op == "--")
+				{
+					if(unary) { stack_types.pb(op1); }
+					else { stack_types.pb(unref_type(op1)); }
+				}
+				else
+				{
+					throw semantic_msg(string("Can`t done unary operation ")+((unary)?op+op1:op1+op)+(name=""));
 				}
 			} break;
 		};
