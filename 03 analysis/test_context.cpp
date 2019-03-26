@@ -2,7 +2,7 @@
 #error "must use '-std=c++11' or '-std=c++14' or '-std=c++17'"
 #else
 
-#define DEBUG
+//#define DEBUG
 #include "context.hpp"
 #include "tid_table.hpp"
 #include "errors.hpp"
@@ -251,7 +251,7 @@ void* main_analysis(void * arg)
 		global_rw::wulock();
 	}
 
-	pthread_exit(0);
+	return NULL;
 }
 
 int main(int argc, char** argv)
