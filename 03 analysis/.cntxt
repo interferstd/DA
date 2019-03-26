@@ -49,7 +49,7 @@
 			("expression 01","{clear buf}''{mcolect buf}{push operation}<priority 01>w({clear buf}{colect buf}{show buf}{push operation}g)b<expression 00>{do while}('++'q'--'o)i({clear buf}{colect buf}{show buf}{push operation}{do}g)")
 			("expression 00","<([expression 15]) or ([type])[expression 02]>i(Nq{push name}wg('('qe({available var}nw'not defined var: '{throw semantic}{clear buf}{var type in buf}<refered>{show buf}{push type})i(g(<skip \n>')'qn)w(<expression 14>','q')'onw'expected \",\"'t','qig)bgcf)n)n)i(Sqi({clear buf}'char*'{mcolect buf}{show buf}{push type}g)n)i(Iqi({clear buf}'int'{mcolect buf}{show buf}{push type}g)n)i(Fqi({clear buf}'float'{mcolect buf}{show buf}{push type}g)n)w'expected primery't")
 		// priority
-			("priority 01","'@'q'$'o'*'o'&'o'++'o'--'o")
+			("priority 01","'**'qw({clear buf}'*'{mcolect buf}{push operation}{push buf in content}cfn)r'&&'qw({clear buf}'&'{mcolect buf}{push operation}{push buf in content}cfn)r'@'q'$'o'*'o'&'o'++'o'--'o")
 			("priority 02","'!'q'~'o'+'o'-'o")
 			("priority 03","'**'q")
 			("priority 04","'*'q'%'o'/'o")

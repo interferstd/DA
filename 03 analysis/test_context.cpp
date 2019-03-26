@@ -2,15 +2,16 @@
 #error "must use '-std=c++11' or '-std=c++14' or '-std=c++17'"
 #else
 
-#define DEBUG
+//#define DEBUG
 #include "context.hpp"
 #include "tid_table.hpp"
 #include "errors.hpp"
 #include <time.h>
+#include <algorithm>
 
 using namespace std;
 
-int main()
+void* main_analysis(void * arg)
 {
 	DBG("[START MAIN]");
 	dllist::dlist<string> stack_types, stack_operations; string buf; // interpret type count
@@ -28,16 +29,18 @@ int main()
 	string buf1 = "", buf2 = "", buf3 = "";
 	DBG("[same inited]")
 
-	function<void(string, bool)> interpret = [&](string op, bool unary)
+ function<void(string, bool)> interpret = [&](string op, bool unary)
 	{
 		DBG("[interpret]");
-		auto is_ptr = [](string s)->bool{ for(auto &e: s) if(e=='*') return true; return false; };
-		auto is_ref = [](string s)->bool{ for(auto &e: s) if(e=='&') return true; return false; };
-		auto clear_type = [](string s)->string{ string ans = ""; if(s.length()<1) return ""; ans.reserve(s.length()); for(string::iterator it = s.begin(); it < s.end(); ++it) if(*it!='&'&&*it!='*')ans.push_back(*it); return ans; };
+		function<bool(string&)> is_ptr = [](string &s)->bool{ for(auto &e: s) if(e=='*') return true; return false; };
+		function<bool(string&)> is_ref = [](string &s)->bool{ for(auto &e: s) if(e=='&') return true; return false; };
+		auto clear_type = [](string s)->string{ string ans = ""; if(s.length()<1) return ""; ans.reserve(s.length()); for(string::iterator it = s.begin(); it < s.end(); ++it) if(*it!='&'&&*it!='*') ans.push_back(*it); return ans; };
 		auto unref_type = [](string s)->string{ string ans = ""; if(s.length()<1) return ""; ans.reserve(s.length()); for(string::iterator it = s.begin(); it < s.end(); ++it) if(*it!='&') ans.push_back(*it); return ans; };
 		auto cast = [](string s)->string { string ans; if(s.length()<3) return ""; ans.reserve(s.length()-2); for(string::iterator it = s.begin()+1; it < s.end()-1; ++it) ans.push_back(*it); return ans; };
+		auto unnamed = [&is_ref,&name](string s)->string { if(is_ref(s)) for(auto &e: s) { if(e=='&') return (e='*',s); } else throw semantic_msg(string("Can`t unnamed ")+(name="",s)); };
+		auto named = [&is_ptr,&name](string s)->string { if(is_ptr(s)) { reverse(s.begin(),s.end()); for(auto &e: s) { if(e=='*') { e='&'; reverse(s.begin(),s.end()); return s; } } } else throw semantic_msg(string("Can`t named ")+(name="",s)); };
 		map<string, int> inst =
-			{{"*",1},{"/",1},{"+",3},{"-",3},{"==",2},{"!=",2},{"<=",2},{">=",2},{"<",2},{">",2},{"&&",2},{"||",2},{"@",3}};
+			{{"*",3},{"/",1},{"+",3},{"-",3},{"==",2},{"!=",2},{"<=",2},{">=",2},{"<",2},{">",2},{"&&",2},{"||",2},{"@",3},{"$",3},{"&",3}};
 
 		switch (inst[op]) {
 			case 0:
@@ -47,7 +50,7 @@ int main()
 					op = cast(op);
 					string op1 = *stack_types.back();
 					stack_types.tb();
-					if(is_ptr(op) == is_ptr(op1))
+					if(is_ptr(op) == is_ptr(op1) || (is_ptr(op) && unref_type(op1)=="int"))
 					{
 						stack_types.pb(op);
 					}else
@@ -70,11 +73,11 @@ int main()
 				stack_types.tb();
 				if(unref_type(op1) == unref_type(op2) && !is_ptr(op1) && !is_ptr(op2))
 				{
-					stack_types.pb(op1);
+					stack_types.pb(unref_type(op1));
 				}else
 				{
 					name = "";
-					throw semantic_msg(string("Can`t done binary operation ")+op2+" "+op+" "+op1);
+					throw semantic_msg(string("Can`t done binary operation ")+op2+" "+op+" "+op1+(name=""));
 				}
 			} break;
 			case 2:
@@ -89,7 +92,7 @@ int main()
 				}else
 				{
 					name = "";
-					throw semantic_msg(string("Can`t done logic operation ")+op2+" "+op+" "+op1);
+					throw semantic_msg(string("Can`t done logic operation ")+op2+" "+op+" "+op1+(name=""));
 				}
 			} break;
 			case 3:
@@ -99,9 +102,11 @@ int main()
 				stack_types.tb();
 				if(op == "@") {	if(unref_type(op1)=="int") stack_types.pb("*"); else throw semantic_msg(string("Can`t done operation ")+op+op1+"\n expected @int"+(name="")); }
 				else if(op == "$") { if(is_ptr(op1)) stack_types.pb(""); else throw semantic_msg(string("Can`t done operation ")+op+op1+"\n expected $[type]*"+(name="")); }
+				else if(op == "*") { stack_types.pb(named(op1)); }
+				else if(op == "&") { stack_types.pb(unnamed(op1)); }
 				else
 				{
-					
+
 				}
 			} break;
 		};
@@ -120,22 +125,16 @@ int main()
 	{
 		DBG("[do while]");
 		if(stack_operations.len < 1) return;
-		dllist::dlist<string>::iterator op = stack_operations.back();
-		if(*op == "") interpret_do(); else
+		if(*stack_operations.back() == "") interpret_do(); else
 		{
-			while(*op != "") --op;
-			++op;
-			while(op != stack_operations.end()) interpret(*op, true), ++op;
-			while(stack_operations.len > 0) if((*stack_operations.back()) != "")
-				stack_operations.tb();
-			else
+			while(*stack_operations.back() != "" && stack_operations.len > 0)
 			{
+				interpret(*stack_operations.back(), true);
 				stack_operations.tb();
-				DBG("[do while end 1]");
-				return;
 			}
+			if(*stack_operations.back() == "" && stack_operations.len > 0) stack_operations.tb();;
 		}
-		DBG("[do while end 2]");
+		DBG("[do while end]");
 	};
 
 	DBG("[START WORK]");
@@ -145,6 +144,7 @@ int main()
 	try{
 		cntxt
 			// Replace standart interrupt
+			("push buf in content",[&](){ cntxt.control_obj.last().content = buf; })
 			("push space",[&](){ var_table.push_space(); })
 			("pop space",[&](){ var_table.pop_space(); })
 			("push var id",[&](){ DBG("[PID:%s]",type.c_str()); var_table.push_id(name, type); })
@@ -154,7 +154,7 @@ int main()
 			("colect type",[&](){ type += cntxt.control_obj.last().content; })
 			("clear type",[&](){ type = ""; })
 			("check init",[&](){ if(type != *stack_types.back()) throw semantic_msg(string("Uncorect initialization ")+type+" of "+*stack_types.back()+(name="")); })
-			("show type",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "{%s}", type.c_str()); })
+			("show type",[&](){ global_rw::wdlock(); fprintf(cntxt.control_obj.lexical_obj.out(), "{%s}", type.c_str()); global_rw::wulock(); })
 			("push name",[&](){ name = cntxt.control_obj.last().content; })
 			("declarable lable",[&](){ cntxt.control_obj.flag() = !lable_table.at(name); })
 			("define lable",[&](){ lable_table[name] = 'L'; })
@@ -180,7 +180,7 @@ int main()
 			("colect buf",[&](){ buf += cntxt.control_obj.last().content; })
 			("mcolect buf",[&](){ buf += cntxt.control_obj.message(); })
 			("clear buf",[&](){ buf = ""; })
-			("show buf",[&](){ fprintf(cntxt.control_obj.lexical_obj.out(), "{%s}", buf.c_str()); })
+			("show buf",[&](){ global_rw::wdlock(); fprintf(cntxt.control_obj.lexical_obj.out(), "{%s}", buf.c_str()); global_rw::wulock(); })
 			("is type",[&](){ cntxt.control_obj.flag() = types.search(cntxt.control_obj.last().content); })
 			("do while",[&](){ DBG("[call do while]"); interpret_do_while(); DBG("[out call do while]"); })
 			("do",[&](){ DBG("[call do]"); interpret_do(); DBG("[out call do]"); })
@@ -192,8 +192,8 @@ int main()
 			.load(".cntxt")
 			// End loads
 			// init
-			.set_in("woyna_i_mir.da")
 			.set_out(stdout)
+			.set_in("woyna_i_mir.da")
 			// End init
 			; //getc(stdin);
 			auto t0 = time(0); cntxt
@@ -203,22 +203,27 @@ int main()
 	}
 	catch(preprocess_msg msg)
 	{
+		global_rw::wdlock();
 		fprintf(cntxt.out(), "\n================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.local.first.c_str(),
 			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
 		cout << "Critical preprocessing error:\n " << msg.content << "\n================================================\n";
+		global_rw::wulock();
 	}
 	catch(context_msg msg)
 	{
+		global_rw::wdlock();
 		fprintf(cntxt.out(), "\n================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.local.first.c_str(),
 			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
 		cout << "Critical context error:\n " << msg.content << "\n================================================\n";
 		cout << buf1+buf2+buf3+"\n";
 		stdout << cntxt.control_obj.last();
+		global_rw::wulock();
 	}
 	catch(semantic_msg msg)
 	{
+		global_rw::wdlock();
 		fprintf(cntxt.out(), "\n================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.local.first.c_str(),
 			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
@@ -228,9 +233,11 @@ int main()
 			cout << buf1+buf2+buf3+"\n";
 			stdout << cntxt.control_obj.last();
 		}
+		global_rw::wulock();
 	}
 	catch(string err_msg)
 	{
+		global_rw::wdlock();
 		fprintf(cntxt.out(), "\n================================================\nFile: %s\nLine: %llu\n",
 			cntxt.control_obj.lexical_obj.local.first.c_str(),
 			cntxt.control_obj.lexical_obj.local.second-((cntxt.control_obj.last().content[0]=='\n')?cntxt.control_obj.last().content.length():0));
@@ -242,8 +249,20 @@ int main()
 			cout << buf1+buf2+buf3+"\n";
 			stdout << cntxt.control_obj.last();
 		}
+		global_rw::wulock();
 	}
+
+	pthread_exit(0);
+}
+
+int main(int argc, char** argv)
+{
+	pthread_t thread; void * res;
+	pthread_create(&thread, NULL, main_analysis, NULL); // make istream output (ret(param))
+	pthread_join(thread, &res);
 
 	return 0;
 }
+
+
 #endif
