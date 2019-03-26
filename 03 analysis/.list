@@ -26,3 +26,5 @@ analysis.hpp -c
 analysis.hpp.fhc -u
 string_loader.hpp -c
 string_loader.hpp.fhc -u
+global_rw.hpp -c
+global_rw.hpp.fhc -u

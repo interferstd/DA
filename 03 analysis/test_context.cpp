@@ -2,7 +2,7 @@
 #error "must use '-std=c++11' or '-std=c++14' or '-std=c++17'"
 #else
 
-//#define DEBUG
+#define DEBUG
 #include "context.hpp"
 #include "tid_table.hpp"
 #include "errors.hpp"
@@ -91,7 +91,6 @@ void* main_analysis(void * arg)
 					stack_types.pb("int");
 				}else
 				{
-					name = "";
 					throw semantic_msg(string("Can`t done logic operation ")+op2+" "+op+" "+op1+(name=""));
 				}
 			} break;
@@ -106,7 +105,7 @@ void* main_analysis(void * arg)
 				else if(op == "&") { stack_types.pb(unnamed(op1)); }
 				else
 				{
-
+					throw semantic_msg(string("Can`t done unary operation ")+op+" "+op1+(name=""));
 				}
 			} break;
 		};
@@ -198,7 +197,7 @@ void* main_analysis(void * arg)
 			; //getc(stdin);
 			auto t0 = time(0); cntxt
 			("Start"); // run context control
-			auto t1 = time(0); printf("[dt: %lld(%lld-%lld)%d:%d]",t1-t0,t1,t0,stack_types.len,stack_operations.len);
+			auto t1 = time(0); global_rw::wdlock(); printf("[dt: %lld(%lld-%lld)%d:%d]",t1-t0,t1,t0,stack_types.len,stack_operations.len); global_rw::wulock();
 			// End
 	}
 	catch(preprocess_msg msg)
