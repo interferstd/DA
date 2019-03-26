@@ -256,6 +256,7 @@ void* main_analysis(void * arg)
 
 int main(int argc, char** argv)
 {
+	space_insteder<global_rw> __space_insteder_global_rw_void_onj;
 	pthread_t thread; void * res;
 	pthread_create(&thread, NULL, main_analysis, NULL); // make istream output (ret(param))
 	pthread_join(thread, &res);
