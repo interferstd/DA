@@ -34,6 +34,7 @@
 
 # Secure
 *.lex
+*.lsa
 *.da
 *.cpp
 *.hpp
